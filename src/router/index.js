@@ -79,18 +79,18 @@ const routes = [
     component: InvestmentTest,
   },
   {
-      path: '/add-youtube',
-      name: 'AddYoutube',
-      component: AddYoutube,
-      meta: {
-        requiresAdmin: true, // 관리자만 접근 가능
-      }
+    path: '/add-youtube',
+    name: 'AddYoutube',
+    component: AddYoutube,
+    meta: {
+      requiresAdmin: true, // 관리자만 접근 가능
+    },
   },
   {
     path: '/youtube/:youtubeNum',
     name: 'YoutubeDetail',
     component: YoutubeDetail,
-    props: true
+    props: true,
   },
   {
     path: '/investment-test-end',
@@ -112,7 +112,7 @@ const routes = [
   { path: '/make-portfolio', name: 'MakePortfolio', component: MakePortfolio },
   { path: '/my-portfolio', name: 'MyPortfolio', component: MyPortfolio },
   {
-    path: '/product-comparison',
+    path: '/productcomparison',
     name: 'ProductComparison',
     component: ProductComparison,
   },
@@ -127,8 +127,8 @@ const routes = [
 ];
 
 const router = createRouter({
-    history: createWebHistory(),
-    routes,
+  history: createWebHistory(),
+  routes,
 });
 
 export default router;
