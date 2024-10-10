@@ -1,61 +1,57 @@
-// store/modules/deposit.js
+// store/deposit.js
+import { defineStore } from 'pinia';
 import { fetchDepositProducts, searchDepositProduct } from '@/api/financeApi';
 
-const depositModule = {
-  namespaced: true,
+export const useDepositStore = defineStore('deposit', {
   state: () => ({
     depositProducts: [],
     depositListLoaded: false,
     searchDepositProducts: [],
   }),
 
-  mutations: {
-    setDepositList(state, deposits) {
-      state.depositProducts = deposits;
-      state.depositListLoaded = true;
-    },
-
-    setSearchDepositList(state, searchResults) {
-      state.searchDepositProducts = searchResults;
-    },
-
-    SET_DEPOSIT_PRODUCTS(state, products) {
-      state.depositProducts = products; // Set it to the array
-    },
-  },
-
   actions: {
-    async fetchDepositList({ commit, state }) {
-      if (!state.depositListLoaded) {
+    setDepositList(deposits) {
+      this.depositProducts = deposits;
+      this.depositListLoaded = true;
+    },
+
+    setSearchDepositList(searchResults) {
+      this.searchDepositProducts = searchResults;
+    },
+
+    setDepositProducts(products) {
+      this.depositProducts = products; // Set it to the array
+    },
+
+    async fetchDepositList() {
+      if (!this.depositListLoaded) {
         try {
           const deposits = await fetchDepositProducts();
-          commit('setDepositList', deposits);
+          this.setDepositList(deposits);
         } catch (error) {
           console.error('Error fetching deposit list:', error);
         }
       }
     },
-    async searchDepositList({ commit }, keyword) {
+
+    async searchDepositList(keyword) {
       try {
         const searchResults = await searchDepositProduct(keyword);
-        commit('setSearchDepositList', searchResults);
+        this.setSearchDepositList(searchResults);
       } catch (error) {
-        console.error('Error searching deposit list: ', error);
+        console.error('Error searching deposit list:', error);
       }
     },
 
-    async fetchDepositProductDetail({ state }, productId) {
-      console.log('배열 확인', state.depositProducts);
+    async fetchDepositProductDetail(productId) {
+      console.log('배열 확인', this.depositProducts);
 
-      // Check if products is an array
-      const productsArray = state.depositProducts.products;
+      // Check if depositProducts is an array
+      const productsArray = this.depositProducts;
 
       if (!Array.isArray(productsArray)) {
-        console.error(
-          'depositProducts.products가 배열이 아닙니다:',
-          productsArray
-        );
-        return null; // 또는 적절한 에러 처리를 합니다.
+        console.error('depositProducts가 배열이 아닙니다:', productsArray);
+        return null; // Return null or handle error appropriately
       }
 
       // Find the product by ID
@@ -63,24 +59,29 @@ const depositModule = {
         productsArray.find((product) => product.productID === productId) || null
       );
     },
-    async fetchDepositProducts({ commit }) {
-      const response = await api.getDepositProducts(); // Adjust according to your API call
-      const data = response.data; // Assuming this contains { rates: ..., products: ... }
 
-      if (Array.isArray(data.products)) {
-        commit('SET_DEPOSIT_PRODUCTS', data.products); // Ensure you're committing the array
-      } else {
-        console.error('depositProducts가 배열이 아닙니다:', data);
+    async fetchDepositProducts() {
+      try {
+        const response = await fetchDepositProducts(); // Adjust according to your API call
+        const data = response.data; // Assuming this contains { rates: ..., products: ... }
+
+        if (Array.isArray(data.products)) {
+          this.setDepositProducts(data.products); // Ensure you're committing the array
+        } else {
+          console.error('depositProducts가 배열이 아닙니다:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching deposit products:', error);
       }
     },
   },
 
   getters: {
-    getDepositList(state) {
-      return state.depositProducts;
+    getDepositList() {
+      return this.depositProducts;
     },
-    getSearchDepositList(state) {
-      return state.searchDepositProducts;
+    getSearchDepositList() {
+      return this.searchDepositProducts;
     },
     getDepositProductDetail: (state) => (productId) => {
       return (
@@ -90,6 +91,4 @@ const depositModule = {
       );
     },
   },
-};
-
-export default depositModule;
+});

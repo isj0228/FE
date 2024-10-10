@@ -1,38 +1,38 @@
 <template>
   <section class="product-container">
     <div class="product-list">
-      <h2>연령별 금융상품 추천</h2>
+      <h2 class="title">연령별 금융상품 추천</h2>
       <div class="age-tabs">
         <button
-          :class="{ active: activeAge === '20대', hovered: hoverAge === '20대' }"
+          :class="{ active: state.activeAge === '20대', hovered: state.hoverAge === '20대' }"
           @mouseover="setHoverAge('20대')"
           @mouseleave="resetHoverAge"
           @click="setActiveAge('20대')"
         >20대</button>
 
         <button
-          :class="{ active: activeAge === '30대', hovered: hoverAge === '30대' }"
+          :class="{ active: state.activeAge === '30대', hovered: state.hoverAge === '30대' }"
           @mouseover="setHoverAge('30대')"
           @mouseleave="resetHoverAge"
           @click="setActiveAge('30대')"
         >30대</button>
 
         <button
-          :class="{ active: activeAge === '40대', hovered: hoverAge === '40대' }"
+          :class="{ active: state.activeAge === '40대', hovered: state.hoverAge === '40대' }"
           @mouseover="setHoverAge('40대')"
           @mouseleave="resetHoverAge"
           @click="setActiveAge('40대')"
         >40대</button>
 
         <button
-          :class="{ active: activeAge === '50대', hovered: hoverAge === '50대' }"
+          :class="{ active: state.activeAge === '50대', hovered: state.hoverAge === '50대' }"
           @mouseover="setHoverAge('50대')"
           @mouseleave="resetHoverAge"
           @click="setActiveAge('50대')"
         >50대</button>
 
         <button
-          :class="{ active: activeAge === '60대', hovered: hoverAge === '60대' }"
+          :class="{ active: state.activeAge === '60대', hovered: state.hoverAge === '60대' }"
           @mouseover="setHoverAge('60대')"
           @mouseleave="resetHoverAge"
           @click="setActiveAge('60대')"
@@ -40,9 +40,12 @@
       </div>
 
       <div class="product-grid">
-        <!-- 연령대 추천 상품을 렌더링 -->
-        <div class="product-card" v-for="(product, index) in ageGroupProducts" :key="index">
-          <!-- 상품 렌더링 로직 -->
+        <div 
+          class="product-card" 
+          v-for="(product, index) in state.ageGroupProducts" 
+          :key="index"
+          @click="handleProductClick(product)"
+        >
           <div v-if="product.isinCdNm && product.bondIsurNm">
             <h3>{{ product.isinCdNm }}</h3>
             <p>{{ product.bondIsurNm }}</p>
@@ -64,38 +67,38 @@
     </div>
 
     <div class="investment-section">
-      <h2>투자 성향별 금융상품 추천</h2>
+      <h2 class="title">투자 성향별 금융상품 추천</h2>
       <div class="investment-types">
         <button
-          :class="{ active: activeInvestment === '공격투자형', hovered: hoverInvestment === '공격투자형' }"
+          :class="{ active: state.activeInvestment === '공격투자형', hovered: state.hoverInvestment === '공격투자형' }"
           @mouseover="setHoverInvestment('공격투자형')"
           @mouseleave="resetHoverInvestment"
           @click="setActiveInvestment('공격투자형')"
         >공격투자형</button>
 
         <button
-          :class="{ active: activeInvestment === '적극투자형', hovered: hoverInvestment === '적극투자형' }"
+          :class="{ active: state.activeInvestment === '적극투자형', hovered: state.hoverInvestment === '적극투자형' }"
           @mouseover="setHoverInvestment('적극투자형')"
           @mouseleave="resetHoverInvestment"
           @click="setActiveInvestment('적극투자형')"
         >적극투자형</button>
 
         <button
-          :class="{ active: activeInvestment === '위험중립형', hovered: hoverInvestment === '위험중립형' }"
+          :class="{ active: state.activeInvestment === '위험중립형', hovered: state.hoverInvestment === '위험중립형' }"
           @mouseover="setHoverInvestment('위험중립형')"
           @mouseleave="resetHoverInvestment"
           @click="setActiveInvestment('위험중립형')"
         >위험중립형</button>
 
         <button
-          :class="{ active: activeInvestment === '안전추구형', hovered: hoverInvestment === '안전추구형' }"
+          :class="{ active: state.activeInvestment === '안전추구형', hovered: state.hoverInvestment === '안전추구형' }"
           @mouseover="setHoverInvestment('안전추구형')"
           @mouseleave="resetHoverInvestment"
           @click="setActiveInvestment('안전추구형')"
         >안전추구형</button>
 
         <button
-          :class="{ active: activeInvestment === '안전형', hovered: hoverInvestment === '안전형' }"
+          :class="{ active: state.activeInvestment === '안전형', hovered: state.hoverInvestment === '안전형' }"
           @mouseover="setHoverInvestment('안전형')"
           @mouseleave="resetHoverInvestment"
           @click="setActiveInvestment('안전형')"
@@ -103,9 +106,12 @@
       </div>
 
       <div class="investment-grid">
-        <!-- 투자 성향 추천 상품을 렌더링 -->
-        <div class="product-card" v-for="(product, index) in investmentProducts" :key="index">
-          <!-- 상품 렌더링 로직 -->
+        <div 
+          class="product-card" 
+          v-for="(product, index) in state.investmentProducts" 
+          :key="index"
+          @click="handleProductClick(product)"
+        >
           <div v-if="product.isinCdNm && product.bondIsurNm">
             <h3>{{ product.bondIsurNm }}</h3>
             <p>{{ product.isinCdNm }}</p>
@@ -129,66 +135,111 @@
 </template>
 
 <script>
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { getTopProductsByAgeGroup, getTopProductsByPreference, getTopProductsBySelectedAgeGroup, getTopProductsBySelectedPreference } from '@/api/hit';
 
 export default {
   name: 'ProductListSection',
-  data() {
-    return {
+  setup() {
+    const router = useRouter();
+
+    // 상태 정의
+    const state = reactive({
       activeAge: '20대',
       hoverAge: null,
       activeInvestment: '공격투자형',
       hoverInvestment: null,
       ageGroupProducts: [],
       investmentProducts: [],
+    });
+
+    // 메서드 정의
+    const handleProductClick = (product) => {
+      let productId = '';
+      
+      if (product.productId) {
+        productId = product.productId;
+      } else if (product.savingProduct.productId) {
+        productId = product.savingProduct.productId;
+      }
+      let productType = '';
+
+      if (product.isinCdNm) {
+        // 채권
+        productType = 'bond';
+      } else if (product.savingProduct && product.savingProductRates.rsrvType) {
+        // 적금
+        productType = 'saving';
+      } else if (product.productNm) {
+        // 펀드
+        productType = 'fund';
+      } else {
+        // 예금
+        productType = 'deposit';
+      }
+
+      // 라우터로 이동하면서 productId와 productType을 전달
+      router.push({
+        name: 'ProductDetail',
+        params: { productId },
+        query: { productType },
+      });
     };
-  },
-  methods: {
-    setActiveAge(age) {
-      this.activeAge = age;
-      this.hoverAge = null;
-      const ageGroup = this.convertAgeToNumber(age);
-      this.fetchAgeGroupProducts(ageGroup, true);
-    },
-    setHoverAge(age) {
-      if (this.activeAge !== age) {
-        this.hoverAge = age;
+
+    const setActiveAge = (age) => {
+      state.activeAge = age;
+      state.hoverAge = null;
+      const ageGroup = convertAgeToNumber(age);
+      fetchAgeGroupProducts(ageGroup, true);
+    };
+
+    const setHoverAge = (age) => {
+      if (state.activeAge !== age) {
+        state.hoverAge = age;
       }
-    },
-    resetHoverAge() {
-      this.hoverAge = null;
-    },
-    setActiveInvestment(investment) {
-      this.activeInvestment = investment;
-      this.hoverInvestment = null;
-      const preference = this.convertInvestmentToNumber(investment);
-      this.fetchInvestmentProducts(preference, true);
-    },
-    setHoverInvestment(investment) {
-      if (this.activeInvestment !== investment) {
-        this.hoverInvestment = investment;
+    };
+
+    const resetHoverAge = () => {
+      state.hoverAge = null;
+    };
+
+    const setActiveInvestment = (investment) => {
+      state.activeInvestment = investment;
+      state.hoverInvestment = null;
+      const preference = convertInvestmentToNumber(investment);
+      fetchInvestmentProducts(preference, true);
+    };
+
+    const setHoverInvestment = (investment) => {
+      if (state.activeInvestment !== investment) {
+        state.hoverInvestment = investment;
       }
-    },
-    resetHoverInvestment() {
-      this.hoverInvestment = null;
-    },
-    async fetchAgeGroupProducts(ageGroup, skipAuth = false) {
+    };
+
+    const resetHoverInvestment = () => {
+      state.hoverInvestment = null;
+    };
+
+    const fetchAgeGroupProducts = async (ageGroup, skipAuth = false) => {
       try {
         const response = await getTopProductsBySelectedAgeGroup(ageGroup, skipAuth);
-        this.ageGroupProducts = response.slice(0, 3); // 최대 3개까지만 가져오기
+        state.ageGroupProducts = response.slice(0, 3); // 최대 3개까지만 가져오기
       } catch (error) {
         console.error('Error fetching top products for age group:', error);
       }
-    },
-    async fetchInvestmentProducts(preference, skipAuth = false) {
+    };
+
+    const fetchInvestmentProducts = async (preference, skipAuth = false) => {
       try {
         const response = await getTopProductsBySelectedPreference(preference, skipAuth);
-        this.investmentProducts = response.slice(0, 3);
+        state.investmentProducts = response.slice(0, 3);
       } catch (error) {
         console.error('Error fetching top products for preference:', error);
       }
-    },
-    convertAgeToNumber(age) {
+    };
+
+    const convertAgeToNumber = (age) => {
       const ageMapping = {
         '20대': 20,
         '30대': 30,
@@ -197,8 +248,9 @@ export default {
         '60대': 60,
       };
       return ageMapping[age] || 20;
-    },
-    convertInvestmentToNumber(investment) {
+    };
+
+    const convertInvestmentToNumber = (investment) => {
       const investmentMapping = {
         '안전형': 1,
         '안전추구형': 2,
@@ -207,47 +259,50 @@ export default {
         '공격투자형': 5,
       };
       return investmentMapping[investment] || 5;
-    },
-    convertNumberToInvestment(investmentNumber) {
-      const investmentMapping = {
-        1: '안전형',
-        2: '안전추구형',
-        3: '위험중립형',
-        4: '적극투자형',
-        5: '공격투자형',
-      };
-      return investmentMapping[investmentNumber] || '공격투자형';
-    },
-  },
-  async mounted() {
-    // 기본 연령대와 투자 성향에 맞는 데이터를 가져옴
-    try {
-      const ageResponse = await getTopProductsByAgeGroup();
-      const investmentResponse = await getTopProductsByPreference();
-      this.activeAge = `${ageResponse[ageResponse.length - 1]}대`;
+    };
 
-      if (investmentResponse[investmentResponse.length - 1] === 1) {
-        this.activeInvestment = '안전형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 2) {
-        this.activeInvestment = '안전추구형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 3) {
-        this.activeInvestment = '위험중립형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 4) {
-        this.activeInvestment = '적극투자형';
-      } else {
-        this.activeInvestment = '공격투자형';
-      }
-      
-      if (ageResponse) {
-        this.ageGroupProducts = ageResponse.slice(0, 3);
-      }
-      if (investmentResponse) {
-        this.investmentProducts = investmentResponse.slice(0, 3);
-      }
+    onMounted(async () => {
+      // 기본 연령대와 투자 성향에 맞는 데이터를 가져옴
+      try {
+        const ageResponse = await getTopProductsByAgeGroup();
+        const investmentResponse = await getTopProductsByPreference();
+        state.activeAge = `${ageResponse[ageResponse.length - 1]}대`;
 
-    } catch (error) {
-      console.error('Error during initial load:', error);
-    }
+        if (investmentResponse[investmentResponse.length - 1] === 1) {
+          state.activeInvestment = '안전형';
+        } else if (investmentResponse[investmentResponse.length - 1] === 2) {
+          state.activeInvestment = '안전추구형';
+        } else if (investmentResponse[investmentResponse.length - 1] === 3) {
+          state.activeInvestment = '위험중립형';
+        } else if (investmentResponse[investmentResponse.length - 1] === 4) {
+          state.activeInvestment = '적극투자형';
+        } else {
+          state.activeInvestment = '공격투자형';
+        }
+
+        if (ageResponse) {
+          state.ageGroupProducts = ageResponse.slice(0, 3);
+        }
+        if (investmentResponse) {
+          state.investmentProducts = investmentResponse.slice(0, 3);
+        }
+      } catch (error) {
+        console.error('Error during initial load:', error);
+      }
+    });
+
+    return {
+      state,
+      handleProductClick,
+      setActiveAge,
+      setHoverAge,
+      resetHoverAge,
+      setActiveInvestment,
+      setHoverInvestment,
+      resetHoverInvestment,
+      fetchAgeGroupProducts,
+      fetchInvestmentProducts,
+    };
   },
 };
 </script>
@@ -259,6 +314,16 @@ export default {
   background-color: #f9fafb;
 }
 
+/* 타이틀 스타일 */
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* 공통 섹션 스타일 */
 .product-list,
 .investment-section {
   margin-bottom: 5%;
@@ -269,6 +334,7 @@ export default {
   padding: 2%;
 }
 
+/* 버튼 스타일 */
 .age-tabs,
 .investment-types {
   display: flex;
@@ -287,8 +353,6 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
   font-weight: bold;
-  width: auto;
-  min-width: 10%;
 }
 
 .age-tabs .active,
@@ -303,10 +367,11 @@ export default {
   color: white;
 }
 
+/* 상품 카드 스타일 */
 .product-grid,
 .investment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2%;
 }
 

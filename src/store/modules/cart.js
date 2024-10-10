@@ -1,6 +1,11 @@
 // src/store/modules/cart.js
 import { defineStore } from 'pinia';
-import { deleteCartItem, fetchCartList, getCartList, postCartItem } from '@/api/cartApi.js';
+import {
+  deleteCartItem,
+  fetchCartList,
+  getCartList,
+  postCartItem,
+} from '@/api/cartApi.js';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -37,7 +42,9 @@ export const useCartStore = defineStore('cart', {
     async removeCartItem(cartId) {
       try {
         await deleteCartItem(cartId);
-        this.cartItems = this.cartItems.filter(item => item.cartId !== cartId); // cartId typo 수정
+        this.cartItems = this.cartItems.filter(
+          (item) => item.cartId !== cartId
+        ); // cartId typo 수정
       } catch (error) {
         console.error('Error removing cart item:', error);
       }
@@ -48,10 +55,10 @@ export const useCartStore = defineStore('cart', {
       try {
         const data = await getCartList();
         this.cartItems = data;
+        console.log(cartItems);
       } catch (error) {
         console.error('Error fetching cart items:', error);
       }
     },
   },
 });
-
