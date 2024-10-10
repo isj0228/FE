@@ -18,7 +18,7 @@
     <v-container v-else>
       <v-row>
         <v-col v-for="persona in paginatedPersonas" :key="persona.personaId" cols="12" md="4">
-          <v-card class="influencer-card my-3" @click="openModal(persona)">
+          <v-card class="influencer-card my-3" @click="openModal(persona.personaName)">
             <!-- 이미지 경로가 있으면 이미지 표시, 없으면 기본 이미지 표시 -->
             <v-img
               :src="
@@ -92,8 +92,8 @@ export default defineComponent({
       // event.target.src = "@/assets/img/1second.jpg";
     };
 
-    const openModal = (persona) => {
-      emit("openModal", persona);
+    const openModal = (personaId) => {
+      emit("openModal", personaId);
     };
 
     onMounted(() => {
