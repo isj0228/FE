@@ -32,29 +32,35 @@
         >50대</button>
 
         <button
-          :class="{ active: activeAge === '60대', hovered: hoverAge === '60대' }"
-          @mouseover="setHoverAge('60대')"
+          :class="{ active: activeAge === '60대 이상', hovered: hoverAge === '60대 이상' }"
+          @mouseover="setHoverAge('60대 이상')"
           @mouseleave="resetHoverAge"
-          @click="setActiveAge('60대')"
+          @click="setActiveAge('60대 이상')"
         >60대 이상</button>
       </div>
 
       <div class="product-grid">
         <!-- 연령대 추천 상품을 렌더링 -->
         <div class="product-card" v-for="(product, index) in ageGroupProducts" :key="index">
-          <!-- 상품 렌더링 로직 -->
+          <!-- 채권 상품일 경우 -->
           <div v-if="product.isinCdNm && product.bondIsurNm">
-            <h3>{{ product.isinCdNm }}</h3>
-            <p>{{ product.bondIsurNm }}</p>
+            <h3>{{ product.isinCdNm }}</h3> <!-- 채권 발행인 이름 -->
+            <p>{{ product.bondIsurNm }}</p> <!-- ISIN 코드 -->
           </div>
+
+          <!-- 펀드 상품일 경우 -->
           <div v-else-if="product.productNm && product.companyNm">
-            <h3>{{ product.productNm }}</h3>
-            <p>{{ product.companyNm }}</p>
+            <h3>{{ product.productNm }}</h3> <!-- 펀드 상품명 -->
+            <p>{{ product.companyNm }}</p> <!-- 펀드 회사명 -->
           </div>
+
+          <!-- 예/적금 상품일 경우 -->
           <div v-else-if="product.savingProduct && product.savingProduct.finPrdtNm && product.savingProduct.korCoNm">
-            <h3>{{ product.savingProduct.finPrdtNm }}</h3>
-            <p>{{ product.savingProduct.korCoNm }}</p>
+            <h3>{{ product.savingProduct.finPrdtNm }}</h3> <!-- 예/적금 상품명 -->
+            <p>{{ product.savingProduct.korCoNm }}</p> <!-- 금융회사명 -->
           </div>
+
+          <!-- 알 수 없는 상품일 경우 -->
           <div v-else>
             <h3>알 수 없는 상품</h3>
             <p>상품 데이터를 확인해주세요.</p>
@@ -105,19 +111,25 @@
       <div class="investment-grid">
         <!-- 투자 성향 추천 상품을 렌더링 -->
         <div class="product-card" v-for="(product, index) in investmentProducts" :key="index">
-          <!-- 상품 렌더링 로직 -->
+          <!-- 채권 상품일 경우 -->
           <div v-if="product.isinCdNm && product.bondIsurNm">
-            <h3>{{ product.bondIsurNm }}</h3>
-            <p>{{ product.isinCdNm }}</p>
+            <h3>{{ product.bondIsurNm }}</h3> <!-- 채권 발행인 이름 -->
+            <p>{{ product.isinCdNm }}</p> <!-- ISIN 코드 -->
           </div>
+
+          <!-- 펀드 상품일 경우 -->
           <div v-else-if="product.productNm && product.companyNm">
-            <h3>{{ product.productNm }}</h3>
-            <p>{{ product.companyNm }}</p>
+            <h3>{{ product.productNm }}</h3> <!-- 펀드 상품명 -->
+            <p>{{ product.companyNm }}</p> <!-- 펀드 회사명 -->
           </div>
+
+          <!-- 예/적금 상품일 경우 -->
           <div v-else-if="product.savingProduct && product.savingProduct.finPrdtNm && product.savingProduct.korCoNm">
-            <h3>{{ product.savingProduct.finPrdtNm }}</h3>
-            <p>{{ product.savingProduct.korCoNm }}</p>
+            <h3>{{ product.savingProduct.finPrdtNm }}</h3> <!-- 예/적금 상품명 -->
+            <p>{{ product.savingProduct.korCoNm }}</p> <!-- 금융회사명 -->
           </div>
+
+          <!-- 알 수 없는 상품일 경우 -->
           <div v-else>
             <h3>알 수 없는 상품</h3>
             <p>상품 데이터를 확인해주세요.</p>
@@ -129,7 +141,7 @@
 </template>
 
 <script>
-import { getTopProductsByAgeGroup, getTopProductsByPreference, getTopProductsBySelectedAgeGroup, getTopProductsBySelectedPreference } from '@/api/hit';
+import { getTopProductsByAgeGroup, getTopProductsByPreference } from '@/api/hit'; // API 호출 함수 임포트
 
 export default {
   name: 'ProductListSection',
@@ -139,16 +151,16 @@ export default {
       hoverAge: null,
       activeInvestment: '공격투자형',
       hoverInvestment: null,
-      ageGroupProducts: [],
-      investmentProducts: [],
+      ageGroupProducts: [], // 연령대에 맞는 추천 상품 리스트
+      investmentProducts: [], // 투자 성향에 맞는 추천 상품 리스트
     };
   },
   methods: {
     setActiveAge(age) {
       this.activeAge = age;
       this.hoverAge = null;
-      const ageGroup = this.convertAgeToNumber(age);
-      this.fetchAgeGroupProducts(ageGroup, true);
+      // 연령대에 맞는 상품을 불러오는 API 호출
+      this.fetchAgeGroupProducts();
     },
     setHoverAge(age) {
       if (this.activeAge !== age) {
@@ -161,8 +173,8 @@ export default {
     setActiveInvestment(investment) {
       this.activeInvestment = investment;
       this.hoverInvestment = null;
-      const preference = this.convertInvestmentToNumber(investment);
-      this.fetchInvestmentProducts(preference, true);
+      // 투자 성향에 맞는 상품을 불러오는 API 호출
+      this.fetchInvestmentProducts();
     },
     setHoverInvestment(investment) {
       if (this.activeInvestment !== investment) {
@@ -172,133 +184,123 @@ export default {
     resetHoverInvestment() {
       this.hoverInvestment = null;
     },
-    async fetchAgeGroupProducts(ageGroup, skipAuth = false) {
+    // 연령대에 맞는 상품을 API로부터 가져오는 함수
+    async fetchAgeGroupProducts() {
       try {
-        const response = await getTopProductsBySelectedAgeGroup(ageGroup, skipAuth);
-        this.ageGroupProducts = response.slice(0, 3); // 최대 3개까지만 가져오기
+        const response = await getTopProductsByAgeGroup(); // 연령대별 상위 3개 상품 API 호출
+        const ageGroup = response.pop(); // 마지막에 연령대 정보가 추가됨
+        this.ageGroupProducts = response.map((p) => {
+          if (p.isinCdNm && p.bondIsurNm) {
+            return {
+              isinCdNm: p.isinCdNm,
+              bondIsurNm: p.bondIsurNm,
+            };
+          } else if (p.productNm && p.companyNm) {
+            return {
+              productNm: p.productNm,
+              companyNm: p.companyNm,
+            };
+          } else if (p.savingProduct && p.savingProduct.finPrdtNm && p.savingProduct.korCoNm) {
+            return {
+              savingProduct: {
+                finPrdtNm: p.savingProduct.finPrdtNm,
+                korCoNm: p.savingProduct.korCoNm,
+              },
+            };
+          }
+          return { message: '알 수 없는 상품' };
+        });
+        this.activeAge = `${ageGroup}대`; // 연령대 탭 업데이트
       } catch (error) {
-        console.error('Error fetching top products for age group:', error);
+        console.error('Error fetching age group products:', error);
       }
     },
-    async fetchInvestmentProducts(preference, skipAuth = false) {
+    // 투자 성향에 맞는 상품을 API로부터 가져오는 함수
+    async fetchInvestmentProducts() {
       try {
-        const response = await getTopProductsBySelectedPreference(preference, skipAuth);
-        this.investmentProducts = response.slice(0, 3);
+        const response = await getTopProductsByPreference(); // 투자 성향별 상위 3개 상품 API 호출
+        const preference = response.pop(); // 마지막에 투자 성향 정보가 추가됨
+        this.investmentProducts = response.map((p) => {
+          if (p.isinCdNm && p.bondIsurNm) {
+            return {
+              isinCdNm: p.isinCdNm,
+              bondIsurNm: p.bondIsurNm,
+            };
+          } else if (p.productNm && p.companyNm) {
+            return {
+              productNm: p.productNm,
+              companyNm: p.companyNm,
+            };
+          } else if (p.savingProduct && p.savingProduct.finPrdtNm && p.savingProduct.korCoNm) {
+            return {
+              savingProduct: {
+                finPrdtNm: p.savingProduct.finPrdtNm,
+                korCoNm: p.savingProduct.korCoNm,
+              },
+            };
+          }
+          return { message: '알 수 없는 상품' };
+        });
+        this.activeInvestment = this.getInvestmentType(preference); // 투자 성향 탭 업데이트
       } catch (error) {
-        console.error('Error fetching top products for preference:', error);
+        console.error('Error fetching investment products:', error);
       }
     },
-    convertAgeToNumber(age) {
-      const ageMapping = {
-        '20대': 20,
-        '30대': 30,
-        '40대': 40,
-        '50대': 50,
-        '60대': 60,
-      };
-      return ageMapping[age] || 20;
-    },
-    convertInvestmentToNumber(investment) {
-      const investmentMapping = {
-        '안전형': 1,
-        '안전추구형': 2,
-        '위험중립형': 3,
-        '적극투자형': 4,
-        '공격투자형': 5,
-      };
-      return investmentMapping[investment] || 5;
-    },
-    convertNumberToInvestment(investmentNumber) {
-      const investmentMapping = {
+    getInvestmentType(preference) {
+      const types = {
         1: '안전형',
         2: '안전추구형',
         3: '위험중립형',
         4: '적극투자형',
         5: '공격투자형',
       };
-      return investmentMapping[investmentNumber] || '공격투자형';
+      return types[preference] || '공격투자형';
     },
   },
-  async mounted() {
-    // 기본 연령대와 투자 성향에 맞는 데이터를 가져옴
-    try {
-      const ageResponse = await getTopProductsByAgeGroup();
-      const investmentResponse = await getTopProductsByPreference();
-      this.activeAge = `${ageResponse[ageResponse.length - 1]}대`;
-
-      if (investmentResponse[investmentResponse.length - 1] === 1) {
-        this.activeInvestment = '안전형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 2) {
-        this.activeInvestment = '안전추구형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 3) {
-        this.activeInvestment = '위험중립형';
-      } else if (investmentResponse[investmentResponse.length - 1] === 4) {
-        this.activeInvestment = '적극투자형';
-      } else {
-        this.activeInvestment = '공격투자형';
-      }
-      
-      if (ageResponse) {
-        this.ageGroupProducts = ageResponse.slice(0, 3);
-      }
-      if (investmentResponse) {
-        this.investmentProducts = investmentResponse.slice(0, 3);
-      }
-
-    } catch (error) {
-      console.error('Error during initial load:', error);
-    }
+  // 컴포넌트가 마운트되면 연령대 및 투자성향에 맞는 상품을 처음 불러옴
+  mounted() {
+    this.fetchAgeGroupProducts();
+    this.fetchInvestmentProducts();
   },
 };
 </script>
 
 <style scoped>
 .product-container {
-  display: block;
-  padding: 5%;
+  display: flex;
+  justify-content: space-between;
+  padding: 40px;
   background-color: #f9fafb;
 }
 
-.product-list,
-.investment-section {
-  margin-bottom: 5%;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 2%;
+.product-list {
+  flex: 1;
+  padding: 20px;
 }
 
-.age-tabs,
-.investment-types {
+.age-tabs {
   display: flex;
   justify-content: center;
-  gap: 2%;
-  margin-bottom: 3%;
-  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
 }
 
-.age-tabs button,
-.investment-types button {
-  padding: 0.5rem 1rem;
+.age-tabs button {
+  padding: 10px 15px;
   border: 1px solid #0070f3;
   background-color: #ffffff;
-  border-radius: 0.5rem;
+  border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s;
   font-weight: bold;
-  width: auto;
-  min-width: 10%;
 }
 
-.age-tabs .active,
-.investment-types .active {
+.age-tabs .active {
   background-color: #0070f3;
   color: white;
 }
 
-.age-tabs .hovered,
-.investment-types .hovered {
+.age-tabs .hovered {
   background-color: #0056b3;
   color: white;
 }
@@ -306,45 +308,62 @@ export default {
 .product-grid,
 .investment-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
-  gap: 2%;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .product-card {
   background-color: white;
-  padding: 5%;
+  padding: 20px;
   border: 1px solid #ddd;
-  border-radius: 0.5rem;
+  border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
 }
 
 .product-card:hover {
-  transform: translateY(-0.5rem);
+  transform: translateY(-5px);
 }
 
 .product-card h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 18px;
+  margin-bottom: 10px;
   color: #0070f3;
 }
 
-@media (max-width: 768px) {
-  .product-grid,
-  .investment-grid {
-    grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
-  }
+.investment-section {
+  flex: 1;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-@media (max-width: 576px) {
-  .product-grid,
-  .investment-grid {
-    grid-template-columns: repeat(auto-fit, minmax(100%, 1fr));
-  }
-  .age-tabs button,
-  .investment-types button {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
+.investment-types {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.investment-types button {
+  padding: 10px 15px;
+  border: 1px solid #0070f3;
+  background-color: #ffffff;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  font-weight: bold;
+}
+
+.investment-types .active {
+  background-color: #0070f3;
+  color: white;
+}
+
+.investment-types .hovered {
+  background-color: #0056b3;
+  color: white;
 }
 </style>
