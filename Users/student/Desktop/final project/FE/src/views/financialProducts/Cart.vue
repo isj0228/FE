@@ -18,7 +18,7 @@
         </v-row>
         <v-divider></v-divider>
 
-        <div v-for="item in cartItems" :key="item.cartId" class="cart-item">
+        <div v-for="item in cartItems" :key="item.cartID" class="cart-item">
           <v-card elevation="2" class="cart-item-card mb-2">
             <v-card-text>
               <v-row>
@@ -34,9 +34,9 @@
                 </v-col>
                 <v-col>{{ item.provider }}</v-col>
                 <v-col>{{ item.productName }}</v-col>
-                <v-col>{{ item.expectedReturn }}%</v-col>
+                <v-col>{{ item.expectedReturn ? `${item.expectedReturn}%` : '-' }}</v-col>
                 <v-col>
-                  <v-btn class="cart-trashcanBtn" @click="removeFromCart(item.cartId)" icon>
+                  <v-btn class="cart-trashcanBtn" @click="removeFromCart(item.cartID)" icon>
                     <v-icon>mdi-delete</v-icon>
                   </v-btn>
                 </v-col>
@@ -58,19 +58,55 @@ export default {
   setup() {
     const cartStore = useCartStore();
     const cartItems = computed(() => cartStore.cartItems);
-    const loading = computed(() => !cartStore.cartItemsLoaded);
+    const loading = ref(true);
     const error = ref(null);
 
+    // Fetch cart items whenever the component is mounted
     onMounted(async () => {
-      try {
-        await cartStore.getCartItems();
-      } catch (err) {
-        error.value = "Error loading cart items";
-      }
+      loading.value = true;
+      await loadCartItems();
+      loading.value = false;
     });
 
-    const removeFromCart = async (cartId) => {
-      await cartStore.removeCartItem(cartId);
+    // Load cart items with fallback to localStorage if needed
+    const loadCartItems = async () => {
+      try {
+        const storedCart = JSON.parse(localStorage.getItem('cartItems'));
+        if (storedCart) {
+          cartStore.cartItems = storedCart; // Set to cartStore
+        } else {
+          await cartStore.getCartItems();
+          localStorage.setItem('cartItems', JSON.stringify(cartItems.value)); // Save to localStorage
+        }
+        console.log('Loaded cart items:', cartItems.value);
+      } catch (err) {
+        error.value = "Error loading cart items: " + err.message;
+        console.error('Error loading cart items:', err);
+        loading.value = false;
+      }
+    };
+
+    // Remove an item from the cart and update localStorage
+    const removeFromCart = async (cartID) => {
+      if (!cartID) {
+        console.error("cartID is undefined or null. Cannot remove item.");
+        return;
+      }
+
+      try {
+        console.log(`Attempting to remove item with cartID: ${cartID}`);
+        await cartStore.removeCartItem(cartID); // Update store
+        console.log('Item removed successfully');
+        
+        // Manually update local storage after deletion
+        const updatedCartItems = cartItems.value.filter(item => item.cartID !== cartID);
+        localStorage.setItem('cartItems', JSON.stringify(updatedCartItems)); // Sync localStorage
+        await loadCartItems(); // Reload items
+      } catch (err) {
+        console.error('Error removing item:', err);
+        error.value = "Failed to remove item. Please try again.";
+        loading.value = false;
+      }
     };
 
     return {
