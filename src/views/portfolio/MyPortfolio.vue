@@ -12,7 +12,7 @@
                 @change="toggleSelectAll"
               />
             </th>
-            <th @click="sortBy('goToPortfolioDetail')">
+            <th @click="sortBy('portfolioName')">
               포트폴리오 이름
               <span v-if="sortKey === 'portfolioName'">
                 {{ sortOrder === 'asc' ? '▲' : '▼' }}
@@ -49,7 +49,10 @@
                 @change="updateSelectAllState"
               />
             </td>
-            <td class="NameCursor" @click="goToPortfolioDetail(item)">
+            <td
+              class="NameCursor"
+              @click="openPortfolioInSidePanel(item)"
+            >
               {{ item.portfolioName }}
             </td>
             <td>{{ item.total }}원</td>
@@ -162,6 +165,7 @@ onMounted(() => {
   fetchPortfolioListAction();
 });
 </script>
+
 
 <style scoped>
 .MyPortfolio-container {
