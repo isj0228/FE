@@ -134,7 +134,7 @@ export default {
 /* 이달의 추천 영상 2개 레이아웃 */
 #featured-videos {
     display: flex;
-    justify-content: center;
+    justify-content: center; /* 카드들이 중앙에 배치되도록 설정 */
     margin-bottom: 40px;
     flex-wrap: wrap;
     gap: 30px;
@@ -149,7 +149,7 @@ export default {
 }
 
 .card-wrapper {
-    width: calc(45% - 20px);
+    width: calc(45% - 20px); /* 반응형으로 카드의 크기를 조정 */
     margin: 10px;
     min-width: 260px;
     transition: transform 0.3s, box-shadow 0.3s;
@@ -176,7 +176,7 @@ export default {
 }
 
 .red-icon {
-    color: red;
+    color: red; /* 유튜브 아이콘 색상 */
 }
 
 .video-title {
