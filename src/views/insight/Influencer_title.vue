@@ -18,7 +18,7 @@
     <v-container v-else>
       <v-row>
         <v-col v-for="persona in paginatedPersonas" :key="persona.personaId" cols="12" md="4">
-          <v-card class="influencer-card my-3" @click="openModal(persona.personaName)">
+          <v-card class="influencer-card my-3">
             <!-- 이미지 경로가 있으면 이미지 표시, 없으면 기본 이미지 표시 -->
             <v-img
               :src="
@@ -52,11 +52,11 @@
 
 <script>
 import axios from "axios";
-import { ref, computed, onMounted, defineComponent } from "vue";
+import { ref, computed, onMounted } from "vue";
 
-export default defineComponent({
+export default {
   name: "InfluencerList",
-  setup(props,{emit}) {
+  setup() {
     const personas = ref([]);
     const loading = ref(true);
     const page = ref(1);
@@ -89,11 +89,6 @@ export default defineComponent({
 
     const onImageError = (event) => {
       event.target.src = "/default_image.jpg"; // 이미지 로드 실패 시 기본 이미지로 대체
-      // event.target.src = "@/assets/img/1second.jpg";
-    };
-
-    const openModal = (personaId) => {
-      emit("openModal", personaId);
     };
 
     onMounted(() => {
@@ -108,10 +103,9 @@ export default defineComponent({
       onPageChange,
       loading,
       onImageError,
-      openModal,
     };
   },
-});
+};
 </script>
 
 <style scoped>

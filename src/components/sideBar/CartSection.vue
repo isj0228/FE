@@ -38,36 +38,23 @@ export default {
     margin-bottom: 10px;
     text-align: center;
 }
-
 .sidebar-link {
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: white;
-    padding: 15px;
+    padding: 15px 0;
+    color: grey;
     text-decoration: none;
-    background-color: #575757;
-    border-radius: 5px;
-    margin-bottom: 5px;
     width: 100%;
-    height: 5vh;
-    position: relative;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     transition: background-color 0.3s ease;
 }
-
 .sidebar-link:hover {
-    background-color: #645f5f;
+    background-color: #d7dbde; /* Change background on hover */
 }
-
 .icon {
-    font-size: 24px;
-    position: relative;
+    font-size: 24px; /* Size of the icon */
     margin-bottom: 5px;
 }
-
 .menu-text {
     font-size: 0.8rem;
     opacity: 1; /* Always fully visible */

@@ -16,7 +16,10 @@
                 </div>
             </div>
 
-            <!-- 추천 포트폴리오 구성 비율 -->
+            <!-- Rest of your content here -->
+            <!-- Example target for highlighting -->
+            <!-- <div ref="exampleElement" class="example-element">튜토리얼 예시 요소</div> -->
+
             <div class="recommendProportion">
                 <h3>유형 별 추천 포트폴리오 구성 비율</h3>
                 <div class="PortfolioChart">
@@ -81,7 +84,6 @@
                 </div>
             </div>
 
-            <!-- 상품 종류 섹션 -->
             <div class="ProductSelection">
                 <h1>상품종류</h1>
                 <v-btn class="cart-btn" @click="openModalCart">장바구니에서 가져오기</v-btn>
@@ -89,9 +91,9 @@
                 <div class="Product-filter">
                     <select v-model="selectedCategory">
                         <option value="">모든 카테고리</option>
-                        <option value="예적금">예/적금</option>
-                        <option value="채권">채권</option>
-                        <option value="펀드">펀드</option>
+                        <option value="savings">예/적금</option>
+                        <option value="bonds">채권</option>
+                        <option value="funds">펀드</option>
                     </select>
                 </div>
                 <div class="table-container">
@@ -103,17 +105,10 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <template v-if="selectedProducts.length > 0">
-                                <tr v-for="item in filteredProducts" :key="item.productId">
-                                    <td>{{ item.productName }}</td>
-                                    <td>{{ item.category }}</td>
-                                </tr>
-                            </template>
-                            <template v-else>
-                                <tr v-for="n in 3" :key="n">
-                                    <td colspan="2" class="empty-row">빈 항목</td>
-                                </tr>
-                            </template>
+                            <tr v-for="item in filteredProducts" :key="item.name">
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.category }}</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -124,7 +119,6 @@
                 />
             </div>
 
-            <!-- 주식 종류 섹션 -->
             <div class="MakePortfolio-stockList-section">
                 <h1>주식 종류</h1>
                 <div class="MakePortfolio-btn">
@@ -170,10 +164,9 @@
                 />
             </div>
 
-            <!-- 하단 버튼들 -->
             <div class="MakePortfolioEnd-btn">
                 <v-btn type="submit" @click="goToMyPortfolio">저장</v-btn>
-                <v-btn @click="confirmCancel">취소</v-btn>
+                <v-btn @click="goToMyPortfolio">취소</v-btn>
             </div>
         </div>
     </div>
@@ -190,25 +183,30 @@ export default {
     name: 'MakePortfolio',
     components: { apexchart: VueApexCharts, ModalStock, ModalCart },
     setup() {
+        const searchQuery = ref('');
         const selectedCategory = ref('');
         const selectedProducts = ref([]);
+        const selectedStocks = ref([]);
         const portfolioStocks = ref([]);
         const chart = ref('char1');
         const isModalOpen = ref(false);
         const isModalCartOpen = ref(false);
+        const products = ref([
+            { name: '상품 1', category: 'savings' },
+            { name: '상품 2', category: 'bonds' },
+            { name: '상품 3', category: 'funds' },
+        ]);
 
-        // 튜토리얼 관련 상태
         const isTutorialActive = ref(false);
         const currentStepIndex = ref(0);
-        const tutorialStyles = ref({});
 
-        // 튜토리얼 단계 정의
+        // Define tutorial steps
         const tutorialSteps = [
             {
                 element: 'exampleElement',
                 text: '이것은 튜토리얼의 첫 번째 단계입니다.',
             },
-            // 추가적인 단계 정의
+            // Define additional steps here
         ];
 
         const currentStep = ref(tutorialSteps[0]);
@@ -246,12 +244,6 @@ export default {
             currentStepIndex.value = 0;
         };
 
-        // ModalCart에서 전달받은 상품들을 추가
-        const addItemsToPortfolio = (items) => {
-            selectedProducts.value.push(...items);
-        };
-
-        // ModalStock에서 전달받은 주식들을 추가
         const addStocksToPortfolio = (stocks) => {
             if (isEditMode.value) {
                 portfolioStocks.value = stocks;
@@ -263,14 +255,14 @@ export default {
         const isEditMode = computed(() => portfolioStocks.value.length > 0);
         const modalButtonLabel = computed(() => (isEditMode.value ? '수정하기' : '추가하기'));
 
-        // 선택된 상품들에 대한 필터링
         const filteredProducts = computed(() => {
-            return selectedProducts.value.filter(
-                (product) => !selectedCategory.value || product.category === selectedCategory.value
+            return products.value.filter(
+                (product) =>
+                    (!selectedCategory.value || product.category === selectedCategory.value) &&
+                    (!searchQuery.value || product.name.includes(searchQuery.value))
             );
         });
 
-        // 차트 옵션
         const chartOptions = ref({
             chart: {
                 type: 'pie',
@@ -292,7 +284,6 @@ export default {
             ],
         });
 
-        // 차트 데이터 시리즈.
         const series = computed(() => {
             switch (chart.value) {
                 case 'char1':
@@ -314,30 +305,24 @@ export default {
             isModalOpen.value = true;
         };
 
-        const openModalCart = () => {
-            isModalCartOpen.value = true;
-        };
-
+        const openModalCart = () => (isModalCartOpen.value = true);
         const router = useRouter();
         const goToMyPortfolio = () => router.push('/my-portfolio');
-        const confirmCancel = () => {
-            if (confirm('취소하시겠습니까?')) {
-                router.push('/my-portfolio');
-            }
-        };
 
         return {
+            searchQuery,
             selectedCategory,
             selectedProducts,
-            portfolioStocks,
+            selectedStocks,
+            products,
             chart,
+            portfolioStocks,
             isModalOpen,
             isModalCartOpen,
             chartOptions,
             series,
             filteredProducts,
             addStocksToPortfolio,
-            addItemsToPortfolio,
             openModal,
             openModalCart,
             goToMyPortfolio,
@@ -348,15 +333,48 @@ export default {
             startTutorial,
             nextStep,
             endTutorial,
-            tutorialStyles,
-            confirmCancel,
+            tutorialStyles: ref({}),
         };
     },
 };
 </script>
 
 <style scoped>
-/* 기존 스타일 */
+/* Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 999;
+}
+
+/* Highlighted element */
+.highlighted {
+    position: relative;
+    z-index: 1000;
+    border: 2px solid yellow;
+    background-color: rgba(255, 255, 0, 0.3);
+}
+
+/* Tutorial message box */
+.tutorial-message {
+    position: absolute;
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    z-index: 1001;
+}
+
+/* Tutorial buttons */
+.tutorial-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
 #wrap {
     width: 100%;
     background-color: black;
@@ -420,6 +438,14 @@ export default {
     gap: 15px;
     align-items: center;
     margin-bottom: 15px;
+}
+
+.search-input,
+.select-category {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .table-container {

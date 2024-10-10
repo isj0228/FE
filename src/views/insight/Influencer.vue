@@ -39,34 +39,24 @@
         </div>
 
         <!-- 모달 창 -->
-    <!--    <ModalInfluencer
+        <ModalInfluencer
             v-if="isModalOpen"
             :isOpen="isModalOpen"
             :persona="selectedPersona"
             @close="closeModal"
-        /> -->
-
-    <ModalPersona
-        :isOpen="isModalOpen"
-        :personaId="selectedPersona"
-        @close = "closeModal"
-    />
-        
-
+        />
     </div>
 </template>
 
 <script>
 import Influencer_title from './Influencer_title.vue';
 import ModalInfluencer from '@/components/Modal/ModalInfluencer.vue';
-import ModalPersona from '@/components/Modal/ModalPersona.vue';
 
 export default {
     name: 'Influencer',
     components: {
         Influencer_title,
         ModalInfluencer, // 모달 컴포넌트 추가
-        ModalPersona,
     },
     data() {
         return {
@@ -84,8 +74,8 @@ export default {
             this.page = newPage; // 페이지가 변경될 때 호출되는 메서드
             console.log(`Current page: ${newPage}`);
         },
-        openModal(personaId) {
-            this.selectedPersona = personaId;
+        openModal(persona) {
+            this.selectedPersona = persona;
             this.isModalOpen = true;
         },
         closeModal() {

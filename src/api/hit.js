@@ -15,12 +15,6 @@ const hitApi = axios.create({
 // Axios 요청 인터셉터 cookies에서 jwt 토큰 포함
 hitApi.interceptors.request.use(
     (config) => {
-        
-        // "skipAuth" 설정이 있는 경우 인터셉터를 우회
-        if (config.skipAuth) {
-            return config;
-        }
-
         // Access Token과 Refresh Token 가져오기
         const accessToken = cookies.get('Authorization');
         const refreshToken = cookies.get('Refresh-Token');
@@ -138,9 +132,7 @@ export async function getTopProductsByPreference() {
 // 연령 버튼에 따라 상위 3개 상품 조회 API
 export async function getTopProductsBySelectedAgeGroup(ageGroup) {
     try {
-        const response = await hitApi.get(`/ageGroup/${ageGroup}/top-products`, {
-            skipAuth: true, // 인터셉터를 거치지 않도록 설정
-        });
+        const response = await hitApi.get(`/ageGroup/${ageGroup}/top-products`);
         return response.data;
     } catch (error) {
         console.error(`Error fetching top products for age group ${ageGroup}`, error);
@@ -151,9 +143,7 @@ export async function getTopProductsBySelectedAgeGroup(ageGroup) {
 // 투자 성향 버튼에 따라 상위 3개 상품 조회 API
 export async function getTopProductsBySelectedPreference(preference) {
     try {
-        const response = await hitApi.get(`/preference/${preference}/top-products`, {
-            skipAuth: true, // 인터셉터를 거치지 않도록 설정
-        });
+        const response = await hitApi.get(`/preference/${preference}/top-products`);
         return response.data;
     } catch (error) {
         console.error(`Error fetching top products for ${preference}`, error);
